@@ -3,6 +3,7 @@
 #include "shapes.h"
 #include "camera.h"
 #include "texture.h"
+#include "load_model.h"
 
 class Timer
 {
@@ -49,44 +50,27 @@ int main()
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
-    static const GLfloat g_vertex_buffer_data[] = 
-    {
-        -1.0f, -1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        0.0f,  1.0f, 0.0f,
-    };
-
-    static const GLfloat g_color_buffer_data[] =
-    {
-        0.583f,  0.771f,  0.014f,
-        0.609f,  0.115f,  0.436f,
-        0.327f,  0.483f,  0.844f
-    };
-
-    static const GLfloat g_uv_buffer_data[] =
-    {
-        0.f, 1.f,
-        0.f, 1.f,
-        0.f, 1.f
-    };
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec3> normals;
+    bool res = loadOBJ(PATH("data/models/cube.obj"), vertices, uvs, normals);
 
     GLuint vertexbuffer;
     glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_buffer), cube_buffer, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
-    GLuint colorbuffer;
-    glGenBuffers(1, &colorbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_color_buffer), cube_color_buffer, GL_STATIC_DRAW);
+    //GLuint colorbuffer;
+    //glGenBuffers(1, &colorbuffer);
+    //glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(cube_color_buffer), cube_color_buffer, GL_STATIC_DRAW);
 
     GLuint uvbuffer;
     glGenBuffers(1, &uvbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_uv_buffer), cube_uv_buffer, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
 
-    GLuint texId = load_texture(PATH("data/textures/brick.png"));
+    GLuint texId = load_texture(PATH("data/textures/asphalt.png"));
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -118,16 +102,16 @@ int main()
         );
 
         //bind color buffer
-        glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-        glVertexAttribPointer(
-            1,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            0,
-            (void*)0
-        );
+        //glEnableVertexAttribArray(1);
+        //glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+        //glVertexAttribPointer(
+        //    1,
+        //    3,
+        //    GL_FLOAT,
+        //    GL_FALSE,
+        //    0,
+        //    (void*)0
+        //);
 
         //bind uv buffer
         glEnableVertexAttribArray(2);
