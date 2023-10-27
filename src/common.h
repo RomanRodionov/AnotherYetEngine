@@ -12,8 +12,8 @@
 #include "load_shader.h"
 
 
-#define HEIGHT 768
-#define WIDTH 1024
+#define HEIGHT 900
+#define WIDTH 1400
 #define PROJECT_ROOT "./"
 
 const double PI = 3.14159;

@@ -31,7 +31,7 @@ public:
         initialFoV      = 45.0f;
         FoV             = initialFoV;
         speed           = 6.0f;
-        mouseSpeed      = 0.05f;
+        mouseSpeed      = 0.001f;
     }
     glm::mat4 create_mvp_matrix();
     void update_controls(GLFWwindow *window, float delta);

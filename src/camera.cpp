@@ -26,17 +26,21 @@ void FPCamera::update_controls(GLFWwindow *window, float delta)
 // mouse
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    glfwSetCursorPos(window, WIDTH / 2, HEIGHT / 2);
+    glm::vec2 offset = {float(WIDTH / 2 - xpos), float(HEIGHT / 2 - ypos)};
+    if (length(offset))
+    {
+        glfwSetCursorPos(window, WIDTH / 2, HEIGHT / 2);
 
-    horizontalAngle += mouseSpeed * delta * float(WIDTH / 2 - xpos);
-    verticalAngle += mouseSpeed * delta * float(HEIGHT / 2 - ypos);
-    verticalAngle = clamp(verticalAngle, -PI / 2.f, PI / 2.f);
+        horizontalAngle += mouseSpeed * offset.x;
+        verticalAngle += mouseSpeed * offset.y;
+        verticalAngle = clamp(verticalAngle, -PI / 2.f, PI / 2.f);
 
-    direction = glm::vec3(
-        cos(verticalAngle) * sin(horizontalAngle),
-        sin(verticalAngle),
-        cos(verticalAngle) * cos(horizontalAngle)
-    );
+        direction = glm::vec3(
+            cos(verticalAngle) * sin(horizontalAngle),
+            sin(verticalAngle),
+            cos(verticalAngle) * cos(horizontalAngle)
+        );
+    }
 
     glm::vec3 right = glm::cross(direction, up);
 

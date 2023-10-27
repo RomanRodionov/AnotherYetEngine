@@ -32,7 +32,7 @@ GLFWwindow* create_glfw_window()
         return NULL;
     }
 
-    glfwSwapInterval(1); //vertical sychronization
+    glfwSwapInterval(0); //vertical sychronization
 
     return window;
 }
