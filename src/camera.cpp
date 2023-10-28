@@ -21,6 +21,16 @@ glm::mat4 FPCamera::create_mvp_matrix()
     return proj * view * model;
 }
 
+glm::mat4 FPCamera::create_view_matrix()
+{
+    glm::mat4 view = glm::lookAt(
+        position, // camera's position
+        position + direction,  // focus direction
+        up   // up direction
+    );
+    return view;
+}
+
 void FPCamera::update_controls(GLFWwindow *window, float delta)
 {
 // mouse

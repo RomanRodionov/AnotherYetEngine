@@ -24,15 +24,21 @@ public:
     void init()
     {
         position        = glm::vec3(0, 0, 5);
-        direction       = glm::vec3(0, 0, 0);
         up              = glm::vec3(0, 1, 0);
         horizontalAngle = PI;
         verticalAngle   = 0.0f;
         initialFoV      = 45.0f;
         FoV             = initialFoV;
-        speed           = 6.0f;
+        speed           = 3.0f;
         mouseSpeed      = 0.001f;
+
+        direction = glm::vec3(
+            cos(verticalAngle) * sin(horizontalAngle),
+            sin(verticalAngle),
+            cos(verticalAngle) * cos(horizontalAngle)
+        );
     }
     glm::mat4 create_mvp_matrix();
+    glm::mat4 create_view_matrix();
     void update_controls(GLFWwindow *window, float delta);
 };
