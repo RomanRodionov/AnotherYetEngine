@@ -1,13 +1,40 @@
 #pragma once
 #include "common.h"
 #include <cstring>
+#include <map>
+
+struct UniqueVertex
+{
+    uint v, uv, n;
+    UniqueVertex(uint v_idx, uint uv_idx, uint n_idx) : v(v_idx), uv(uv_idx), n(n_idx) {}
+    bool operator==(const UniqueVertex &vert) const {
+        if (v == vert.v && uv == vert.uv && n == vert.n) 
+            return true;
+        return false;
+    }
+    bool operator<(const UniqueVertex &vert) const {
+        if (v < vert.v) return true;
+        else if (v == vert.v)
+        {
+            if (uv < vert.uv) return true;
+            else if (uv == vert.uv)
+            {
+                if (n < vert.n) return true;
+                return false;
+            }
+            return false;
+        }
+        return false;
+    }
+};
 
 bool loadOBJ
 (
     const std::string &path,
-    std::vector <glm::vec3> &vertices,
-    std::vector <glm::vec2> &uvs,
-    std::vector <glm::vec3> &normals
+    std::vector<uint> &indices,
+    std::vector<glm::vec3> &vertices,
+    std::vector<glm::vec2> &uvs,
+    std::vector<glm::vec3> &normals
 )
 {
     std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
@@ -66,14 +93,27 @@ bool loadOBJ
 
         }
     } 
+    std::map<UniqueVertex, uint> verticesMap;
+    uint index = 0;
     for (unsigned int i = 0; i < vertexIndices.size(); i++)
     {
-        glm::vec3 vertex = temp_vertices[vertexIndices[i] - 1];
-        vertices.push_back(vertex);
-        glm::vec2 uv = temp_uvs[uvIndices[i] - 1];
-        uvs.push_back(uv);
-        glm::vec3 normal = temp_normals[normalIndices[i] - 1];
-        normals.push_back(normal);
+        UniqueVertex unique_v(vertexIndices[i] - 1, uvIndices[i] - 1, normalIndices[i] - 1);
+        auto it = verticesMap.find(unique_v);
+        if (it == verticesMap.end())
+        {
+            glm::vec3 vertex = temp_vertices[unique_v.v];
+            vertices.push_back(vertex);
+            glm::vec2 uv = temp_uvs[unique_v.uv];
+            uvs.push_back(uv);
+            glm::vec3 normal = temp_normals[unique_v.n];
+            normals.push_back(normal);
+            verticesMap[unique_v] = index;
+            indices.push_back(index++);
+        }
+        else
+        {
+            indices.push_back(it->second);
+        }
     }
     return true;
 }

@@ -55,10 +55,16 @@ int main()
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
+    std::vector<unsigned int> indices;
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> normals;
-    bool res = loadOBJ(PATH("data/models/monkey.obj"), vertices, uvs, normals);
+    bool res = loadOBJ(PATH("data/models/monkey.obj"), indices, vertices, uvs, normals);
+
+    GLuint elementbuffer;
+    glGenBuffers(1, &elementbuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
     GLuint vertexbuffer;
     glGenBuffers(1, &vertexbuffer);
@@ -152,7 +158,11 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texId);
 
         glUseProgram(programID);
-        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
+        //glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
         glDisableVertexAttribArray(0);
 
         glfwSwapBuffers(window);
