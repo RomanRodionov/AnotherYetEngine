@@ -4,33 +4,12 @@
 #include "camera.h"
 #include "texture.h"
 #include "load_model.h"
-
-class Timer
-{
-    double lastTime;
-    float delta;
-public:
-    Timer() {}
-    void init()
-    {
-        lastTime = glfwGetTime();
-        delta = 0.f;
-    }
-    void update()
-    {
-        double curTime = glfwGetTime();
-        delta = float(curTime - lastTime);
-        lastTime = curTime;
-    }
-    double get_delta()
-    {
-        return delta;
-    }
-};
+#include "timer.h"
 
 int main()
 {
     Timer timer;
+    FPSCounter fps_counter(&timer);
     float delta = 0.f;
 
     GLFWwindow *window = create_glfw_window();
@@ -92,8 +71,7 @@ int main()
     glDepthFunc(GL_LESS);
 
     timer.init();
-
-    int counter = 0;
+    fps_counter.init();
 
     do //main loop
     {
@@ -136,6 +114,7 @@ int main()
             (void*)0
         );
 
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
 
         glm::mat4 mvp = camera.create_mvp_matrix();
         glUniformMatrix4fv(MVP_ID, 1, GL_FALSE, &mvp[0][0]);
@@ -159,7 +138,6 @@ int main()
 
         glUseProgram(programID);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
         //glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
@@ -172,9 +150,11 @@ int main()
         timer.update();
         delta = timer.get_delta();
 
-        if ((counter++) % 100 == 0)
+        fps_counter.update();
+        if (fps_counter.ready())
         {
-            //std::cout << 1 / delta << std::endl;
+            fps_counter.print_fps();
+            fps_counter.init();
         }
 
         camera.update_controls(window, delta);
