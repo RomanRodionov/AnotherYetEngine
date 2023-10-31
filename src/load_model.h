@@ -2,6 +2,7 @@
 #include "common.h"
 #include <cstring>
 #include <map>
+#include "normal_maps.h"
 
 struct UniqueVertex
 {
@@ -95,7 +96,7 @@ bool loadOBJ
     } 
     std::map<UniqueVertex, uint> verticesMap;
     uint index = 0;
-    for (unsigned int i = 0; i < vertexIndices.size(); i++)
+    for (uint i = 0; i < vertexIndices.size(); ++i)
     {
         UniqueVertex unique_v(vertexIndices[i] - 1, uvIndices[i] - 1, normalIndices[i] - 1);
         auto it = verticesMap.find(unique_v);

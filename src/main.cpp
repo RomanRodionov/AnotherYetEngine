@@ -1,10 +1,10 @@
-#include "main.h"
 #include "common.h"
 #include "shapes.h"
 #include "camera.h"
 #include "texture.h"
 #include "load_model.h"
 #include "timer.h"
+#include <iostream>
 
 int main()
 {
@@ -29,6 +29,7 @@ int main()
     GLuint LIGHT_COLOR_ID = glGetUniformLocation(programID, "lightColor");
     GLuint LIGHT_POWER_ID = glGetUniformLocation(programID, "lightPower");
     GLuint LIGHT_POS_WORLD_ID = glGetUniformLocation(programID, "lightPosWorld");
+    GLuint MODEL_VIEW_3x3_ID = glGetUniformLocation(programID, "MV3x3");
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
@@ -38,7 +39,11 @@ int main()
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> normals;
-    bool res = loadOBJ(PATH("data/models/monkey.obj"), indices, vertices, uvs, normals);
+    std::vector<glm::vec3> tangents;
+    std::vector<glm::vec3> bitangents; 
+
+    bool res = loadOBJ(PATH("data/models/monkey_highpoly.obj"), indices, vertices, uvs, normals);
+    computeTangentBasis(indices, vertices, uvs, normals, tangents, bitangents);
 
     GLuint elementbuffer;
     glGenBuffers(1, &elementbuffer);
@@ -60,11 +65,20 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
     glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
 
-    GLuint texId = load_texture(PATH("data/textures/brick.png"));
+    GLuint tangentbuffer;
+    glGenBuffers(1, &tangentbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, tangentbuffer);
+    glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(glm::vec3), &tangents[0], GL_STATIC_DRAW);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    GLuint bitangentbuffer;
+    glGenBuffers(1, &bitangentbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
+    glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(glm::vec3), &bitangents[0], GL_STATIC_DRAW);
+
+    GLuint diffuseTex = load_texture(PATH("data/materials/rock/BaseColor.jpg"), false);
+    GLuint diffuseTexID = glGetUniformLocation(programID, "diffuseTexSampler");
+    GLuint normalTex = load_texture(PATH("data/materials/rock/Normal.jpg"), false);
+    GLuint normalTexID = glGetUniformLocation(programID, "normalTexSampler");
 
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -114,6 +128,30 @@ int main()
             (void*)0
         );
 
+        //bind tangent buffer
+        glEnableVertexAttribArray(3);
+        glBindBuffer(GL_ARRAY_BUFFER, tangentbuffer);
+        glVertexAttribPointer(
+            3,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            0,
+            (void*)0
+        );
+
+        //bind bitangent buffer
+        glEnableVertexAttribArray(4);
+        glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
+        glVertexAttribPointer(
+            4,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            0,
+            (void*)0
+        );
+
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
 
         glm::mat4 mvp = camera.create_mvp_matrix();
@@ -125,16 +163,26 @@ int main()
         glm::mat4 model = glm::mat4(1.f);
         glUniformMatrix4fv(MODEL_ID, 1, GL_FALSE, &model[0][0]);
 
+        glm::mat4 modelView = view * model;
+        glm::mat3 modelView3x3 = glm::mat3(modelView);
+        glUniformMatrix3fv(MODEL_VIEW_3x3_ID, 1, GL_FALSE, &modelView3x3[0][0]);
+
         glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
         glUniform3fv(LIGHT_COLOR_ID, 1, &lightColor[0]);
 
         GLfloat lightPower = 100.f;
         glUniform1f(LIGHT_POWER_ID, lightPower);
 
-        glm::vec3 lightPosWorld = glm::vec3(10.f, 10.f, 10.f);
+        glm::vec3 lightPosWorld = glm::vec3(10.f * sin(timer.get_time()), 10.f, 10.f * cos(timer.get_time()));
         glUniform3fv(LIGHT_POS_WORLD_ID, 1, &lightPosWorld[0]);
 
-        glBindTexture(GL_TEXTURE_2D, texId);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, diffuseTex);
+        glUniform1i(diffuseTexID, 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, normalTex);
+        glUniform1i(normalTexID, 1);
 
         glUseProgram(programID);
 
@@ -142,6 +190,10 @@ int main()
         //glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
         glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+        glDisableVertexAttribArray(3);
+        glDisableVertexAttribArray(4);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -153,7 +205,7 @@ int main()
         fps_counter.update();
         if (fps_counter.ready())
         {
-            fps_counter.print_fps();
+            //fps_counter.print_fps();
             fps_counter.init();
         }
 

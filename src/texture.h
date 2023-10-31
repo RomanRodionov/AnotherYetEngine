@@ -19,4 +19,4 @@ public:
     ~Img();
 };
 
-GLuint load_texture(const char* path);
+GLuint load_texture(const char* path, bool reversed_channels=true);

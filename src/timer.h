@@ -34,16 +34,23 @@ class FPSCounter
     uint frames;
     Timer *timer;
     float period;
+    float max_delta;
 public:
     FPSCounter(Timer *t, float p=1.f) : timer(t), period(p) {}
     void init()
     {
         lastTime = timer->get_time();
         frames = 0;
+        max_delta = -1.f;
     }
     void update()
     {
         frames++;
+        float delta = timer->get_delta();
+        if (delta > max_delta)
+        {
+            max_delta = delta;
+        }
     }
     bool ready()
     {
@@ -52,6 +59,6 @@ public:
     void print_fps()
     {
         float t = timer->get_time() - lastTime;
-        std::cout << "FPS: " << frames / t << std::endl;
+        std::cout << "FPS: " << frames / t << " AvgTime: " << 1000.f * t / static_cast<float>(frames) << " ms " << "MaxTime: " << max_delta * 1000.f << " ms" << std::endl;
     }
 };
