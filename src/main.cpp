@@ -75,10 +75,14 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
     glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(glm::vec3), &bitangents[0], GL_STATIC_DRAW);
 
-    GLuint diffuseTex = load_texture(PATH("data/materials/rock/BaseColor.jpg"), false);
+    GLuint diffuseTex = load_texture(PATH("data/materials/wood_floor/BaseColor.jpg"), false);
     GLuint diffuseTexID = glGetUniformLocation(programID, "diffuseTexSampler");
-    GLuint normalTex = load_texture(PATH("data/materials/rock/Normal.jpg"), false);
+    GLuint normalTex = load_texture(PATH("data/materials/wood_floor/Normal.jpg"), false);
     GLuint normalTexID = glGetUniformLocation(programID, "normalTexSampler");
+    GLuint roughTex = load_texture(PATH("data/materials/wood_floor/Roughness.jpg"), false);
+    GLuint roughTexID = glGetUniformLocation(programID, "roughTexSampler");
+    GLuint aoTex = load_texture(PATH("data/materials/wood_floor/AmbientOcclusion.jpg"), false);
+    GLuint aoTexID = glGetUniformLocation(programID, "aoTexSampler");
 
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -184,6 +188,14 @@ int main()
         glBindTexture(GL_TEXTURE_2D, normalTex);
         glUniform1i(normalTexID, 1);
 
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, roughTex);
+        glUniform1i(roughTexID, 2);
+
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, aoTex);
+        glUniform1i(aoTexID, 3);
+
         glUseProgram(programID);
 
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
@@ -205,7 +217,7 @@ int main()
         fps_counter.update();
         if (fps_counter.ready())
         {
-            //fps_counter.print_fps();
+            fps_counter.print_fps();
             fps_counter.init();
         }
 

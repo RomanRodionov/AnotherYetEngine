@@ -47,6 +47,11 @@ void  computeTangentBasis(
         glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
         glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
 
+        if (glm::dot(glm::cross(n0, tangent), bitangent) < 0.f)
+        {
+            tangent *= -1.f;
+        }
+
         tangents[i0] += make_orthogonal(tangent, n0);
         tangents[i1] += make_orthogonal(tangent, n1);
         tangents[i2] += make_orthogonal(tangent, n2);

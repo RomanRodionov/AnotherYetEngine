@@ -13,11 +13,15 @@ out vec3 color;
 
 uniform sampler2D diffuseTexSampler;
 uniform sampler2D normalTexSampler;
+uniform sampler2D roughTexSampler;
+uniform sampler2D aoTexSampler;
 
 void main()
 {
     vec3 Normal_tangent = normalize(texture(normalTexSampler, UV).rgb * 2.f - 1.f);
     vec3 materialColor = texture(diffuseTexSampler, UV).rgb;
+    vec3 roughness = texture(roughTexSampler, UV).rgb;
+    vec3 ambientOcclusion = texture(aoTexSampler, UV).rgb;
 
     vec3 n = normalize(Normal_tangent);
     vec3 l = normalize(LightDir_tangent);
@@ -31,12 +35,13 @@ void main()
 
     float lightDist = length(LightDir_camera);
 
-    float specular = 0.2;
-    float diffuse = 1.0 - specular;
+    vec3 ambientColor = materialColor;
+    vec3 specularColor = (vec3(1.f, 1.f, 1.f) - roughness) * 0.2;
+    vec3 diffuseColor = materialColor;
 
-    vec3 ambientColor = materialColor * vec3(0.1, 0.1, 0.1);
-    vec3 diffuseColor = materialColor * LightColor * cosTheta / (lightDist * lightDist) * diffuse;
-    vec3 specularColor = LightColor * pow(cosAlpha, lobeWidth) / (lightDist * lightDist) * specular;
+    vec3 ambientLight = ambientColor * vec3(0.1, 0.1, 0.1);
+    vec3 diffuseLight = diffuseColor * LightColor * cosTheta / (lightDist * lightDist);
+    vec3 specularLight = specularColor * LightColor * pow(cosAlpha, lobeWidth) / (lightDist * lightDist);
 
-    color = ambientColor + diffuseColor + specularColor;
+    color = (ambientLight + diffuseLight + specularLight) * ambientOcclusion;
 }
