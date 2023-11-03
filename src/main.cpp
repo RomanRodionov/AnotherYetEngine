@@ -1,5 +1,4 @@
 #include "common.h"
-#include "shapes.h"
 #include "camera.h"
 #include "texture.h"
 #include "load_model.h"
@@ -75,14 +74,67 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
     glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(glm::vec3), &bitangents[0], GL_STATIC_DRAW);
 
-    GLuint diffuseTex = load_texture(PATH("data/materials/wood_floor/BaseColor.jpg"), false);
+    GLuint diffuseTex = load_texture(PATH("data/materials/art_deco/BaseColor.jpg"), false);
     GLuint diffuseTexID = glGetUniformLocation(programID, "diffuseTexSampler");
-    GLuint normalTex = load_texture(PATH("data/materials/wood_floor/Normal.jpg"), false);
+    GLuint normalTex = load_texture(PATH("data/materials/art_deco/Normal.jpg"), false);
     GLuint normalTexID = glGetUniformLocation(programID, "normalTexSampler");
-    GLuint roughTex = load_texture(PATH("data/materials/wood_floor/Roughness.jpg"), false);
+    GLuint roughTex = load_texture(PATH("data/materials/art_deco/Roughness.jpg"), false);
     GLuint roughTexID = glGetUniformLocation(programID, "roughTexSampler");
-    GLuint aoTex = load_texture(PATH("data/materials/wood_floor/AmbientOcclusion.jpg"), false);
+    GLuint aoTex = load_texture(PATH("data/materials/art_deco/AmbientOcclusion.jpg"), false);
     GLuint aoTexID = glGetUniformLocation(programID, "aoTexSampler");
+
+//framebuffer stuff
+    GLuint FramebufferName = 0;
+    glGenFramebuffers(1, &FramebufferName);
+    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+
+    GLuint renderTex;
+    glGenTextures(1, &renderTex);
+
+    glBindTexture(GL_TEXTURE_2D, renderTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    GLuint depthrenderbuffer;
+    glGenRenderbuffers(1, &depthrenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WIDTH, HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+    
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTex, 0);
+    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, DrawBuffers);
+
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        //std::cout << glCheckFramebufferStatus(GL_FRAMEBUFFER) << " " << GL_FRAMEBUFFER_COMPLETE << std::endl;
+        return false;
+    }
+
+    std::cout << "BBB" << std::endl;
+
+    GLuint quad_VertexArrayID;
+    glGenVertexArrays(1, &quad_VertexArrayID);
+    glBindVertexArray(quad_VertexArrayID);
+
+    static const GLfloat g_quad_vertex_buffer_data[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f,  1.0f, 0.0f,
+    };
+
+    GLuint quad_vertexbuffer;
+    glGenBuffers(1, &quad_vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+    GLuint quad_programID = LoadShaders(PATH("shaders/pass_vert.glsl"), PATH("shaders/simple_tex_frag.glsl"));
+    GLuint texID = glGetUniformLocation(quad_programID, "renderTex");
+    GLuint timeID = glGetUniformLocation(quad_programID, "time");    
 
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -94,7 +146,12 @@ int main()
     do //main loop
     {
 // graphics
+        glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+        glViewport(0, 0, WIDTH, HEIGHT);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glUseProgram(programID);
 
         //bind vertices buffer
         glEnableVertexAttribArray(0);
@@ -156,8 +213,6 @@ int main()
             (void*)0
         );
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-
         glm::mat4 mvp = camera.create_mvp_matrix();
         glUniformMatrix4fv(MVP_ID, 1, GL_FALSE, &mvp[0][0]);
 
@@ -196,8 +251,7 @@ int main()
         glBindTexture(GL_TEXTURE_2D, aoTex);
         glUniform1i(aoTexID, 3);
 
-        glUseProgram(programID);
-
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
         //glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
@@ -206,6 +260,31 @@ int main()
         glDisableVertexAttribArray(2);
         glDisableVertexAttribArray(3);
         glDisableVertexAttribArray(4);
+
+// render to the screen
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, WIDTH, HEIGHT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(quad_programID);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, renderTex);
+        glUniform1i(texID, 0);
+        glUniform1f(timeID, (float)timer.get_time() * 10.f);
+
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+        glVertexAttribPointer(
+            0,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            0,
+            (void*)0
+        );
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDisableVertexAttribArray(0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -225,6 +304,24 @@ int main()
 
     } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
              glfwWindowShouldClose(window) == 0);
+
+    glDeleteBuffers(1, &elementbuffer);
+    glDeleteBuffers(1, &vertexbuffer);
+    glDeleteBuffers(1, &uvbuffer);
+    glDeleteBuffers(1, &normalbuffer);
+    glDeleteProgram(programID);
+    glDeleteTextures(1, &diffuseTex);
+    glDeleteTextures(1, &normalTex);
+    glDeleteTextures(1, &aoTex);
+    glDeleteTextures(1, &roughTex);
+
+    glDeleteFramebuffers(1, &FramebufferName);
+	glDeleteTextures(1, &renderTex);
+	glDeleteRenderbuffers(1, &depthrenderbuffer);
+	glDeleteBuffers(1, &quad_vertexbuffer);
+	glDeleteVertexArrays(1, &VertexArrayID);
+
+    glfwTerminate();
 
     return 0;
 }

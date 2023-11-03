@@ -1,5 +1,7 @@
 #version 330 core
 
+layout(location = 0) out vec3 color;
+
 in vec2 UV;
 in vec3 Pos_world;
 in vec3 EyeDir_camera;
@@ -8,8 +10,6 @@ in vec3 Normal_camera;
 in vec3 LightColor;
 in vec3 LightDir_tangent;
 in vec3 EyeDir_tangent;
-
-out vec3 color;
 
 uniform sampler2D diffuseTexSampler;
 uniform sampler2D normalTexSampler;
@@ -36,7 +36,7 @@ void main()
     float lightDist = length(LightDir_camera);
 
     vec3 ambientColor = materialColor;
-    vec3 specularColor = (vec3(1.f, 1.f, 1.f) - roughness) * 0.2;
+    vec3 specularColor = (vec3(1.f, 1.f, 1.f) - roughness) * 0.5;
     vec3 diffuseColor = materialColor;
 
     vec3 ambientLight = ambientColor * vec3(0.1, 0.1, 0.1);
