@@ -9,7 +9,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
     scroll_offset_y += yoffset;
 }
 
-glm::mat4 FPCamera::create_mvp_matrix()
+glm::mat4 FPCamera::create_mvp_matrix(glm::mat4 model)
 {
     glm::mat4 proj = glm::perspective(glm::radians(FoV), (float) WIDTH / (float) HEIGHT, 0.1f, 100.f);
     glm::mat4 view = glm::lookAt(
@@ -17,7 +17,6 @@ glm::mat4 FPCamera::create_mvp_matrix()
         position + direction,  // focus direction
         up   // up direction
     );
-    glm::mat4 model = glm::mat4(1.f);
     return proj * view * model;
 }
 
@@ -29,6 +28,19 @@ glm::mat4 FPCamera::create_view_matrix()
         up   // up direction
     );
     return view;
+}
+
+void FPCamera::update_dir_vecs()
+{
+    float viewport_height = 2.0 * tan(FoV / 2.0);
+    float viewport_width = viewport_height / (double) height * (double) width;
+    glm::vec3 w = glm::normalize(-direction);
+    glm::vec3 u = glm::normalize(glm::cross(up, w));
+    glm::vec3 v = glm::cross(w, u);
+        
+    horizontal = u * viewport_width;
+    vertical = v * viewport_height;
+    ll_corner = position - horizontal / 2.f - vertical / 2.f - w;
 }
 
 void FPCamera::update_controls(GLFWwindow *window, float delta)
@@ -98,4 +110,6 @@ void FPCamera::update_controls(GLFWwindow *window, float delta)
     {
         position += glm::normalize(move) * delta * speed;
     }
+
+    update_dir_vecs();
 }

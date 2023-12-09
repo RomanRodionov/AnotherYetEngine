@@ -1,10 +1,11 @@
-#version 330 core
+#version 430 core
 
-layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 0) in vec3 a_Pos;
+layout(location = 1) in vec2 a_TexCoords;
 
-out vec2 UV;
+out vec2 TexCoords;
 
 void main(){
-	gl_Position = vec4(vertexPosition_modelspace,1);
-	UV = (vertexPosition_modelspace.xy + vec2(1, 1)) / 2.0;
+	TexCoords = a_TexCoords;
+	gl_Position = vec4(a_Pos, 1.0);
 }

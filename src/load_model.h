@@ -118,3 +118,10 @@ bool loadOBJ
     }
     return true;
 }
+
+bool load_mesh(const std::string &path, Mesh &mesh)
+{
+    loadOBJ(path, mesh.indices, mesh.vertices, mesh.uvs, mesh.normals);
+    computeTangentBasis(mesh.indices, mesh.vertices, mesh.uvs, mesh.normals, mesh.tangents, mesh.bitangents);
+    return true;
+}

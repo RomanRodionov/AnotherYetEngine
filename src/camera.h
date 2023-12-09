@@ -6,7 +6,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 
 class FPCamera
 {
-    glm::vec3 position;
+    uint width, height;
     glm::vec3 direction;
     glm::vec3 up;
     float horizontalAngle;
@@ -16,10 +16,13 @@ class FPCamera
     float speed;
     float mouseSpeed;
 public:
+    glm::vec3 position, horizontal, vertical, ll_corner;
     FPCamera(GLFWwindow *window)
     {
         init();
         glfwSetScrollCallback(window, scroll_callback);
+        width = WIDTH;
+        height = HEIGHT;
     }
     void init()
     {
@@ -37,8 +40,11 @@ public:
             sin(verticalAngle),
             cos(verticalAngle) * cos(horizontalAngle)
         );
+
+        update_dir_vecs();
     }
-    glm::mat4 create_mvp_matrix();
+    void update_dir_vecs();
+    glm::mat4 create_mvp_matrix(glm::mat4 model);
     glm::mat4 create_view_matrix();
     void update_controls(GLFWwindow *window, float delta);
 };
