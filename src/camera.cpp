@@ -66,7 +66,7 @@ void FPCamera::update_controls(GLFWwindow *window, float delta)
 
     glm::vec3 right = glm::cross(direction, up);
 
-    FoV = initialFoV - 5 * scroll_offset_y;
+    FoV = initialFoV - scroll_offset_y / 10.f;
 
 // keyboard
 

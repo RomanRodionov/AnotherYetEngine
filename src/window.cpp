@@ -45,7 +45,7 @@ GLFWwindow* create_glfw_window()
         return NULL;
     }
 
-    glfwSwapInterval(0); //vertical sychronization
+    glfwSwapInterval(1); //vertical sychronization
 
     glfwSetCursorPos(window, WIDTH / 2, HEIGHT / 2);
 

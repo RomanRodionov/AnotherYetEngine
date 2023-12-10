@@ -74,6 +74,7 @@ int main()
         rtShader.setVec3("horizontal", camera.horizontal);
         rtShader.setVec3("vertical", camera.vertical);
         rtShader.setVec3("ll_corner", camera.ll_corner);
+        rtShader.setFloat("seed", timer.get_time());
         glDispatchCompute(WIDTH / 16, HEIGHT / 16, 1);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
