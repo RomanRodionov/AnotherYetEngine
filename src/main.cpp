@@ -3,6 +3,7 @@
 #include "texture.h"
 #include "load_model.h"
 #include "timer.h"
+#include "load_shader.h"
 #include <iostream>
 
 int main()
@@ -15,16 +16,9 @@ int main()
 
     FPCamera camera;
 
-    GLuint programID = LoadShaders(PATH("shaders/vert.glsl"),
+    auto mainShader = VertFragShader(PATH("shaders/vert.glsl"),
                                      PATH("shaders/frag.glsl"));
 
-    GLuint MVP_ID = glGetUniformLocation(programID, "MVP");
-    GLuint VIEW_ID = glGetUniformLocation(programID, "view");
-    GLuint MODEL_ID = glGetUniformLocation(programID, "model");
-    GLuint LIGHT_COLOR_ID = glGetUniformLocation(programID, "lightColor");
-    GLuint LIGHT_POWER_ID = glGetUniformLocation(programID, "lightPower");
-    GLuint LIGHT_POS_WORLD_ID = glGetUniformLocation(programID, "lightPosWorld");
-    GLuint MODEL_VIEW_3x3_ID = glGetUniformLocation(programID, "MV3x3");
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
@@ -71,13 +65,9 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(glm::vec3), &bitangents[0], GL_STATIC_DRAW);
 
     GLuint diffuseTex = load_texture(PATH("data/materials/art_deco/BaseColor.jpg"), false);
-    GLuint diffuseTexID = glGetUniformLocation(programID, "diffuseTexSampler");
     GLuint normalTex = load_texture(PATH("data/materials/art_deco/Normal.jpg"), false);
-    GLuint normalTexID = glGetUniformLocation(programID, "normalTexSampler");
     GLuint roughTex = load_texture(PATH("data/materials/art_deco/Roughness.jpg"), false);
-    GLuint roughTexID = glGetUniformLocation(programID, "roughTexSampler");
     GLuint aoTex = load_texture(PATH("data/materials/art_deco/AmbientOcclusion.jpg"), false);
-    GLuint aoTexID = glGetUniformLocation(programID, "aoTexSampler");
 
 //framebuffer stuff
     GLuint FramebufferName = 0;
@@ -128,9 +118,7 @@ int main()
     glGenBuffers(1, &quad_vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-    GLuint quad_programID = LoadShaders(PATH("shaders/pass_vert.glsl"), PATH("shaders/simple_tex_frag.glsl"));
-    GLuint texID = glGetUniformLocation(quad_programID, "renderTex");
-    GLuint timeID = glGetUniformLocation(quad_programID, "time");    
+    auto postShader = VertFragShader(PATH("shaders/pass_vert.glsl"), PATH("shaders/simple_tex_frag.glsl"));
 
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -147,7 +135,7 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(programID);
+        mainShader.use();
 
         //bind vertices buffer
         glEnableVertexAttribArray(0);
@@ -210,42 +198,42 @@ int main()
         );
 
         glm::mat4 mvp = camera.create_mvp_matrix();
-        glUniformMatrix4fv(MVP_ID, 1, GL_FALSE, &mvp[0][0]);
+        mainShader.setMat4("MVP", mvp);
 
         glm::mat4 view = camera.create_view_matrix();
-        glUniformMatrix4fv(VIEW_ID, 1, GL_FALSE, &view[0][0]);
+        mainShader.setMat4("view", view);
 
         glm::mat4 model = glm::mat4(1.f);
-        glUniformMatrix4fv(MODEL_ID, 1, GL_FALSE, &model[0][0]);
+        mainShader.setMat4("model", model);
 
         glm::mat4 modelView = view * model;
         glm::mat3 modelView3x3 = glm::mat3(modelView);
-        glUniformMatrix3fv(MODEL_VIEW_3x3_ID, 1, GL_FALSE, &modelView3x3[0][0]);
+        mainShader.setMat3("MV3x3", modelView3x3);
 
         glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
-        glUniform3fv(LIGHT_COLOR_ID, 1, &lightColor[0]);
+        mainShader.setVec3("lightColor", lightColor);
 
         GLfloat lightPower = 100.f;
-        glUniform1f(LIGHT_POWER_ID, lightPower);
+        mainShader.setFloat("lightPower", lightPower);
 
         glm::vec3 lightPosWorld = glm::vec3(10.f * sin(timer.get_time()), 10.f, 10.f * cos(timer.get_time()));
-        glUniform3fv(LIGHT_POS_WORLD_ID, 1, &lightPosWorld[0]);
+        mainShader.setVec3("lightPosWorld", lightPosWorld);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseTex);
-        glUniform1i(diffuseTexID, 0);
+        mainShader.setInt("diffuseTexSampler", 0);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, normalTex);
-        glUniform1i(normalTexID, 1);
+        mainShader.setInt("normalTexSampler", 1);
 
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, roughTex);
-        glUniform1i(roughTexID, 2);
+        mainShader.setInt("roughTexSampler", 2);
 
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, aoTex);
-        glUniform1i(aoTexID, 3);
+        mainShader.setInt("aoTexSampler", 3);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
@@ -261,12 +249,13 @@ int main()
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, WIDTH, HEIGHT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(quad_programID);
+        postShader.use();
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, renderTex);
-        glUniform1i(texID, 0);
-        glUniform1f(timeID, (float)timer.get_time() * 10.f);
+
+        postShader.setInt("renderTex", 0);
+        postShader.setFloat("time", (float)timer.get_time() * 10.f);
 
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
@@ -305,7 +294,6 @@ int main()
     glDeleteBuffers(1, &vertexbuffer);
     glDeleteBuffers(1, &uvbuffer);
     glDeleteBuffers(1, &normalbuffer);
-    glDeleteProgram(programID);
     glDeleteTextures(1, &diffuseTex);
     glDeleteTextures(1, &normalTex);
     glDeleteTextures(1, &aoTex);
