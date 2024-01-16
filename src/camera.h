@@ -1,9 +1,6 @@
 #pragma once
 
 #include "common.h"
-
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
-
 class FPCamera
 {
     glm::vec3 position;
@@ -16,10 +13,9 @@ class FPCamera
     float speed;
     float mouseSpeed;
 public:
-    FPCamera(GLFWwindow *window)
+    FPCamera()
     {
         init();
-        glfwSetScrollCallback(window, scroll_callback);
     }
     void init()
     {
@@ -40,5 +36,5 @@ public:
     }
     glm::mat4 create_mvp_matrix();
     glm::mat4 create_view_matrix();
-    void update_controls(GLFWwindow *window, float delta);
+    void update_controls(Window& window, float delta);
 };

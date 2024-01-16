@@ -3,12 +3,6 @@
 
 static double scroll_offset_x = 0, scroll_offset_y = 0;
 
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
-{
-    scroll_offset_x += xoffset;
-    scroll_offset_y += yoffset;
-}
-
 glm::mat4 FPCamera::create_mvp_matrix()
 {
     glm::mat4 proj = glm::perspective(glm::radians(FoV), (float) WIDTH / (float) HEIGHT, 0.1f, 100.f);
@@ -31,15 +25,17 @@ glm::mat4 FPCamera::create_view_matrix()
     return view;
 }
 
-void FPCamera::update_controls(GLFWwindow *window, float delta)
+void FPCamera::update_controls(Window& window, float delta)
 {
 // mouse
     double xpos, ypos;
-    glfwGetCursorPos(window, &xpos, &ypos);
-    glm::vec2 offset = {float(WIDTH / 2 - xpos), float(HEIGHT / 2 - ypos)};
+    int width, height;
+    window.getRes(&width, &height);
+    window.getCursorPos(&xpos, &ypos);
+    glm::vec2 offset = {float(width / 2 - xpos), float(height / 2 - ypos)};
     if (length(offset))
     {
-        glfwSetCursorPos(window, WIDTH / 2, HEIGHT / 2);
+        window.setCursorPos(width / 2, height / 2);
 
         horizontalAngle += mouseSpeed * offset.x;
         verticalAngle += mouseSpeed * offset.y;
@@ -64,32 +60,32 @@ void FPCamera::update_controls(GLFWwindow *window, float delta)
 
     glm::vec3 move(0);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (window.getKey(GLFW_KEY_W) == GLFW_PRESS)
     {
         move += direction;
     }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    if (window.getKey(GLFW_KEY_S) == GLFW_PRESS)
     {
         move -= direction;
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (window.getKey(GLFW_KEY_D) == GLFW_PRESS)
     {
         move += right;
     }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    if (window.getKey(GLFW_KEY_A) == GLFW_PRESS)
     {
         move -= right;
     }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    if (window.getKey(GLFW_KEY_SPACE) == GLFW_PRESS)
     {
         move += up;
     }
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    if (window.getKey(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
         move -= up;
     }
     // return initial settings
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    if (window.getKey(GLFW_KEY_R) == GLFW_PRESS)
     {
         init();
         move = glm::vec3(0);

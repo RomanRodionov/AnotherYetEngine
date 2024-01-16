@@ -11,13 +11,9 @@ int main()
     FPSCounter fps_counter(&timer);
     float delta = 0.f;
 
-    GLFWwindow *window = create_glfw_window();
-    if (!window)
-    {
-        return -1;
-    }
+    Window window(WIDTH, HEIGHT);
 
-    FPCamera camera(window);
+    FPCamera camera;
 
     GLuint programID = LoadShaders(PATH("shaders/vert.glsl"),
                                      PATH("shaders/frag.glsl"));
@@ -286,8 +282,8 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glDisableVertexAttribArray(0);
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        window.swapBuffers();
+        window.pollEvents();
 
 // physics and controls
         timer.update();
@@ -302,8 +298,8 @@ int main()
 
         camera.update_controls(window, delta);
 
-    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-             glfwWindowShouldClose(window) == 0);
+    } while (window.getKey(GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+             window.shouldClose() == 0);
 
     glDeleteBuffers(1, &elementbuffer);
     glDeleteBuffers(1, &vertexbuffer);
