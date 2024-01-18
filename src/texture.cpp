@@ -1,17 +1,6 @@
+
 #define STB_IMAGE_IMPLEMENTATION
-#include "../include/stb/stb_image.h"
-
-#include "common.h"
 #include "texture.h"
-#include <cstdlib> 
-
-Img Img::load(const char* path, int channels)
-{
-    Img t;
-    t.data = stbi_load(path, &t.w, &t.h, &t.ch, channels);
-    t.mode = stbi;
-    return t;
-}
 
 Img::~Img()
 {
@@ -29,7 +18,7 @@ Img::~Img()
     }
 }
 
-GLuint load_texture(const char* path, bool reversed_channels)
+Texture2D::Texture2D(const Img& img, bool reversed_channels)
 {
     GLint pixel_mode    = GL_RGB;
     GLint internal_mode = GL_RGB; 
@@ -37,8 +26,6 @@ GLuint load_texture(const char* path, bool reversed_channels)
     {
         pixel_mode = GL_BGR;
     }
-    Img img = Img::load(path);
-    GLuint textureID;
     glGenTextures(1, &textureID);
 
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -47,6 +34,11 @@ GLuint load_texture(const char* path, bool reversed_channels)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
 
-    return textureID;
+Texture2D::~Texture2D()
+{
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDeleteTextures(1, &textureID);
 }

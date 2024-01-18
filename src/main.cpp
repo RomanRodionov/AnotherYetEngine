@@ -64,10 +64,10 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
     glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(glm::vec3), &bitangents[0], GL_STATIC_DRAW);
 
-    GLuint diffuseTex = load_texture(PATH("data/materials/art_deco/BaseColor.jpg"), false);
-    GLuint normalTex = load_texture(PATH("data/materials/art_deco/Normal.jpg"), false);
-    GLuint roughTex = load_texture(PATH("data/materials/art_deco/Roughness.jpg"), false);
-    GLuint aoTex = load_texture(PATH("data/materials/art_deco/AmbientOcclusion.jpg"), false);
+    Texture2D diffuseTex(PATH("data/materials/art_deco/BaseColor.jpg"));
+    Texture2D normalTex(PATH("data/materials/art_deco/Normal.jpg"));
+    Texture2D roughTex(PATH("data/materials/art_deco/Roughness.jpg"));
+    Texture2D aoTex(PATH("data/materials/art_deco/AmbientOcclusion.jpg"));
 
 //framebuffer stuff
     GLuint FramebufferName = 0;
@@ -98,8 +98,6 @@ int main()
         //std::cout << glCheckFramebufferStatus(GL_FRAMEBUFFER) << " " << GL_FRAMEBUFFER_COMPLETE << std::endl;
         return false;
     }
-
-    std::cout << "BBB" << std::endl;
 
     GLuint quad_VertexArrayID;
     glGenVertexArrays(1, &quad_VertexArrayID);
@@ -220,19 +218,19 @@ int main()
         mainShader.setVec3("lightPosWorld", lightPosWorld);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, diffuseTex);
+        diffuseTex.bind();
         mainShader.setInt("diffuseTexSampler", 0);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, normalTex);
+        normalTex.bind();
         mainShader.setInt("normalTexSampler", 1);
 
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, roughTex);
+        roughTex.bind();
         mainShader.setInt("roughTexSampler", 2);
 
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, aoTex);
+        aoTex.bind();
         mainShader.setInt("aoTexSampler", 3);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
@@ -294,13 +292,8 @@ int main()
     glDeleteBuffers(1, &vertexbuffer);
     glDeleteBuffers(1, &uvbuffer);
     glDeleteBuffers(1, &normalbuffer);
-    glDeleteTextures(1, &diffuseTex);
-    glDeleteTextures(1, &normalTex);
-    glDeleteTextures(1, &aoTex);
-    glDeleteTextures(1, &roughTex);
 
     glDeleteFramebuffers(1, &FramebufferName);
-	glDeleteTextures(1, &renderTex);
 	glDeleteRenderbuffers(1, &depthrenderbuffer);
 	glDeleteBuffers(1, &quad_vertexbuffer);
 	glDeleteVertexArrays(1, &VertexArrayID);
