@@ -23,6 +23,10 @@ public:
     {
         programID = id;
     }
+    GLuint getAttribLocation(const std::string &name)
+    {
+        return glGetAttribLocation(programID, name.c_str());
+    }
     void setInt(const std::string &name, int value) const
     { 
         glUniform1i(glGetUniformLocation(programID, name.c_str()), value); 

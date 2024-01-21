@@ -5,7 +5,7 @@ static double scroll_offset_x = 0, scroll_offset_y = 0;
 
 glm::mat4 FPCamera::create_mvp_matrix()
 {
-    glm::mat4 proj = glm::perspective(glm::radians(FoV), (float) WIDTH / (float) HEIGHT, 0.1f, 100.f);
+    glm::mat4 proj = glm::perspective(glm::radians(FoV), (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, 0.1f, 100.f);
     glm::mat4 view = glm::lookAt(
         position, // camera's position
         position + direction,  // focus direction

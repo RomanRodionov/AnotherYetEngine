@@ -13,8 +13,8 @@
 #include "window.h"
 #include "load_shader.h"
 
-#define HEIGHT 900
-#define WIDTH 1400
+#define WINDOW_HEIGHT 900
+#define WINDOW_WIDTH 1400
 #define PROJECT_ROOT "/home/roman/Desktop/TinyEngine/"
 
 const double PI = 3.14159;

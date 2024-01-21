@@ -1,6 +1,5 @@
 #include "window.h"
 
-// https://gamedev.stackexchange.com/questions/181668/glfwcreatewindow-function-returning-null
 void error_callback(int error, const char *msg) {
     std::string s;
     s = " [" + std::to_string(error) + "] " + msg + '\n';

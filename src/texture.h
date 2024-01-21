@@ -26,20 +26,41 @@ public:
     ~Img();
 };
 
+enum class TexType : uint
+{
+    NONE,
+    DIFFUSE,
+    SPECULAR,
+    AMBIENT,
+    EMISSIVE,
+    HEIGHT,
+    NORMALS,
+    SHININESS,
+    OPACITY,
+    DISPLACEMENT,
+    LIGHTMAP,
+    SIZE
+};
+
 class Texture2D
 {
 private:
-    GLuint textureID;
+    GLuint m_textureID;
+    TexType m_type;
 public:
-    Texture2D(const Img& img, bool reversed_channels=false);
-    Texture2D(const char* path, bool reversed_channels=false) : Texture2D(Img(path), reversed_channels) {}
+    Texture2D(const Img& img, TexType type=TexType::NONE, bool reversed_channels=false);
+    Texture2D(const char* path, TexType type=TexType::NONE, bool reversed_channels=false) : Texture2D(Img(path), type, reversed_channels) {}
     ~Texture2D();
     void bind()
     {
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        glBindTexture(GL_TEXTURE_2D, m_textureID);
     }
     void unbind()
     {
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    TexType getType()
+    {
+        return m_type;
     }
 };

@@ -4,6 +4,7 @@
 #include <map>
 #include "normal_maps.h"
 
+/*
 struct UniqueVertex
 {
     uint v, uv, n;
@@ -118,3 +119,5 @@ bool loadOBJ
     }
     return true;
 }
+
+*/

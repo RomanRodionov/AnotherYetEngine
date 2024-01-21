@@ -7,7 +7,7 @@ inline glm::vec3 make_orthogonal(glm::vec3 t, glm::vec3 n)
     return t - glm::dot(n, t) * n;
 }
 
-void  computeTangentBasis(
+void computeTangentBasis(
     std::vector<uint> &indices,
     std::vector<glm::vec3> &vertices,
     std::vector<glm::vec2> &uvs,
