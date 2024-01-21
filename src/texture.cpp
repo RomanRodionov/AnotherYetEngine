@@ -18,14 +18,29 @@ Img::~Img()
     }
 }
 
-Texture2D::Texture2D(const Img& img, TexType type, bool reversed_channels)
+Texture2D::Texture2D(const Img& img, TexType type)
 {
     m_type = type;
-    GLint pixel_mode    = GL_RGB;
-    GLint internal_mode = GL_RGB; 
-    if (reversed_channels)
+    GLint pixel_mode;
+    GLint internal_mode; 
+    switch(img.ch)
     {
-        pixel_mode = GL_BGR;
+        case 1:
+            pixel_mode = GL_RED;
+            internal_mode = GL_RED;
+            break;
+        case 2:
+            pixel_mode = GL_RG;
+            internal_mode = GL_RG;
+            break;
+        case 3:
+            pixel_mode = GL_RGB;
+            internal_mode = GL_RGB;
+            break;
+        case 4:
+            pixel_mode = GL_RGBA;
+            internal_mode = GL_RGBA;
+            break;
     }
     glGenTextures(1, &m_textureID);
 
@@ -38,8 +53,20 @@ Texture2D::Texture2D(const Img& img, TexType type, bool reversed_channels)
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture2D::~Texture2D()
+Texture2D::Texture2D(const aiTexture* tex, TexType type)
 {
+    m_type = type;
+    GLint pixel_mode;
+    GLint internal_mode; 
+    pixel_mode = GL_RGBA;
+    internal_mode = GL_BGRA;
+    glGenTextures(1, &m_textureID);
+
+    glBindTexture(GL_TEXTURE_2D, m_textureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, internal_mode, tex->mWidth, tex->mHeight, 0, pixel_mode, GL_UNSIGNED_BYTE, tex->pcData);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glDeleteTextures(1, &m_textureID);
 }

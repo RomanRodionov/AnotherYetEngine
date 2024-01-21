@@ -7,9 +7,10 @@ layout (location = 2) in vec2 aTexCoords;
 out vec2 UV;
 
 uniform mat4 MVP;
+uniform mat4 model;
 
 void main()
 {
     UV = aTexCoords;
-    gl_Position = MVP * vec4(aPos, 1.0);
+    gl_Position = MVP * model * vec4(aPos, 1.0);
 }
