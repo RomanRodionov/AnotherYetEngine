@@ -1,7 +1,11 @@
 #include "common.h"
 #include "camera.h"
 
-static double scroll_offset_x = 0, scroll_offset_y = 0;
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (action == GLFW_PRESS && key == GLFW_KEY_H) {
+        activeMouse = activeMouse ? false : true;
+    }
+}
 
 glm::mat4 FPCamera::create_mvp_matrix()
 {
@@ -33,7 +37,7 @@ void FPCamera::update_controls(Window& window, float delta)
     window.getRes(&width, &height);
     window.getCursorPos(&xpos, &ypos);
     glm::vec2 offset = {float(width / 2 - xpos), float(height / 2 - ypos)};
-    if (length(offset))
+    if (length(offset) > 0.00001f && activeMouse)
     {
         window.setCursorPos(width / 2, height / 2);
 
@@ -87,7 +91,7 @@ void FPCamera::update_controls(Window& window, float delta)
     // return initial settings
     if (window.getKey(GLFW_KEY_R) == GLFW_PRESS)
     {
-        init();
+        init(mWindow);
         move = glm::vec3(0);
     }
     if (glm::length(move) > 0.00001)

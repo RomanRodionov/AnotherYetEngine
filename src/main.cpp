@@ -18,7 +18,7 @@ int main()
     window.getRes(&width, &height);
     window.setCursorPos(width / 2, height / 2);
 
-    FPCamera camera;
+    FPCamera camera(&window);
 
     auto mainShader = VertFragShader(PATH("shaders/diffuse_vert.glsl"),
                                      PATH("shaders/diffuse_frag.glsl"));
@@ -31,7 +31,7 @@ int main()
     //bool res = loadOBJ(PATH("data/models/monkey_highpoly.obj"), indices, vertices, uvs, normals);
     //computeTangentBasis(indices, vertices, uvs, normals, tangents, bitangents);
 */
-    Model model(PATH("data/models/scifi/scifi.fbx"));
+    Model model(PATH("data/models/sci-fi-corridor/untitled.fbx"));
 
 /*
 //framebuffer stuff
@@ -96,10 +96,31 @@ int main()
 // graphics
         //glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         window.getRes(&width, &height);
         glViewport(0, 0, width, height);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ImGui::SetNextWindowPos(ImVec2(0, 0));
+        ImGui::SetNextWindowSize(ImVec2(150, 70));
+
+        bool opened = true;
+
+        ImGui::Begin("ui", &opened, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar);
+
+        ImGui::SetCursorPos(ImVec2(8, 25));
+        std::string message;
+        fps_counter.print_fps(message);
+        ImGui::Text(message.c_str());
+
+        ImGui::End();
+        ImGui::EndFrame();
+        ImGui::Render();
 
         mainShader.use();
 
@@ -134,6 +155,9 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glDisableVertexAttribArray(0);
         */
+
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         window.swapBuffers();
         window.pollEvents();
 

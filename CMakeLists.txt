@@ -19,9 +19,30 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 find_package(GLEW REQUIRED)
 
-add_executable(TinyEngine src/model.cpp src/texture.cpp src/common.cpp src/camera.cpp src/load_shader.cpp src/window.cpp  src/main.cpp)
+set(SOURCES
+    src/model.cpp 
+    src/texture.cpp 
+    src/common.cpp 
+    src/camera.cpp 
+    src/load_shader.cpp 
+    src/window.cpp  
+    src/main.cpp
+)
+
+set(IMGUI_SOURCES
+    include/imgui/imgui.cpp
+    include/imgui/imgui_demo.cpp
+    include/imgui/imgui_draw.cpp
+    include/imgui/imgui_tables.cpp
+    include/imgui/imgui_widgets.cpp
+    include/imgui/imgui_impl_opengl3.cpp
+    include/imgui/imgui_impl_glfw.cpp
+)
+
+add_executable(TinyEngine ${SOURCES} ${IMGUI_SOURCES})
 
 target_include_directories(TinyEngine PRIVATE libs/assimp-src/include)
+target_include_directories(TinyEngine PRIVATE include/imgui)
 target_link_libraries(TinyEngine assimp)
 target_link_libraries(TinyEngine OpenGL GLEW::glew glfw)
 

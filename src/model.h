@@ -90,7 +90,7 @@ private:
         scene->mMetaData->Get<int>("CoordAxis", coordAxis);
         int coordAxisSign = 1;
         scene->mMetaData->Get<int>("CoordAxisSign", coordAxisSign);
-        float scaleFactor = 1.f;
+        float scaleFactor = 10.f;
         //scene->mMetaData->Get<float>("UnitScaleFactor", scaleFactor);
 
         aiVector3D upVec = upAxis == 0 ? aiVector3D(upAxisSign,0,0) : upAxis == 1 ? aiVector3D(0, upAxisSign,0) : aiVector3D(0, 0, upAxisSign);

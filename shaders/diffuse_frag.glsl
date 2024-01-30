@@ -12,4 +12,5 @@ void main()
     vec4 diffuse_color = texture(diffuse0, UV);
     vec4 emissive_color = texture(emissive0, UV);
     FragColor = diffuse_color;// + emissive_color;
+    //FragColor = vec4(UV.x, UV.y, 1.f, 1.f);
 }
